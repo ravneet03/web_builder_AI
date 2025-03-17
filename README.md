@@ -59,7 +59,7 @@ Once both backend and frontend servers are running:
 ## 📌 Dependencies  
 - **Backend:** Node.js, Express.js  
 - **Frontend:** React.js  
-- **AI Integration:** (Mention AI-related dependencies if applicable)  
+- **AI Integration:** API of LLM models (like in this project Claude's api is used)  
 
 ## 🤝 Contributing  
 Want to contribute? Follow these steps:  
