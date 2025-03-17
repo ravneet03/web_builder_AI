@@ -46,8 +46,8 @@ cd web_builder_AI
 
 ### **3. Access the Application**  
 Once both backend and frontend servers are running:  
-- **Backend** runs on `http://localhost:5000`  
-- **Frontend** runs on `http://localhost:3000`  
+- **Backend** runs on `http://localhost:3000`  
+- **Frontend** runs on `http://localhost:5173`  
 
 ## 🛠️ How It Works  
 1. The **user inputs** their website requirements.  
