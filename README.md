@@ -1,6 +1,5 @@
 # Web Builder AI  
-
-![Web Builder AI](https://your-image-url.com)  
+  
 _Automate website building with AI-powered solutions._  
 
 ## 🚀 Project Overview  
