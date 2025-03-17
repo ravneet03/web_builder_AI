@@ -1,0 +1,16 @@
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+.env.example
+
+# Build artifacts
+dist/
+build/
+*.log
+*.tsbuildinfo
+
+# IDE files
+.vscode/
+.idea/

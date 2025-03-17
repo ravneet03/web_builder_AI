@@ -1,0 +1,21 @@
+{
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@types/express": "^5.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "typescript": "^5.8.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/node": "^22.13.8"
+  },
+  "name": "be",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsc -b && node dist/index.js",
+    "start":  "tsc -b && node dist/index.js"
+  }
+}
