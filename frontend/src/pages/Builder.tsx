@@ -29,6 +29,7 @@ export function Builder() {
   const [llmMessages, setLlmMessages] = useState<{role: "user" | "assistant", content: string;}[]>([]);
   const [loading, setLoading] = useState(false);
   const [templateSet, setTemplateSet] = useState(false);
+  const [projectId, setProjectId] = useState<string | null>(null); // NEW STATE
   const webcontainer = useWebContainer();
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -36,19 +37,20 @@ export function Builder() {
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
   
   const [steps, setSteps] = useState<Step[]>([]);
-
   const [files, setFiles] = useState<FileItem[]>([]);
 
+  // ----------------------------
+  // Existing steps processing
+  // ----------------------------
   useEffect(() => {
     let originalFiles = [...files];
     let updateHappened = false;
     steps.filter(({status}) => status === "pending").map(step => {
       updateHappened = true;
       if (step?.type === StepType.CreateFile) {
-        let parsedPath = step.path?.split("/") ?? []; // ["src", "components", "App.tsx"]
-        let currentFileStructure = [...originalFiles]; // {}
+        let parsedPath = step.path?.split("/") ?? [];
+        let currentFileStructure = [...originalFiles];
         let finalAnswerRef = currentFileStructure;
-  
         let currentFolder = ""
         while(parsedPath.length) {
           currentFolder =  `${currentFolder}/${parsedPath[0]}`;
@@ -56,7 +58,6 @@ export function Builder() {
           parsedPath = parsedPath.slice(1);
   
           if (!parsedPath.length) {
-            // final file
             let file = currentFileStructure.find(x => x.path === currentFolder)
             if (!file) {
               currentFileStructure.push({
@@ -69,10 +70,8 @@ export function Builder() {
               file.content = step.code;
             }
           } else {
-            /// in a folder
             let folder = currentFileStructure.find(x => x.path === currentFolder)
             if (!folder) {
-              // create the folder
               currentFileStructure.push({
                 name: currentFolderName,
                 type: 'folder',
@@ -80,36 +79,30 @@ export function Builder() {
                 children: []
               })
             }
-  
             currentFileStructure = currentFileStructure.find(x => x.path === currentFolder)!.children!;
           }
         }
         originalFiles = finalAnswerRef;
       }
-
     })
 
     if (updateHappened) {
-
       setFiles(originalFiles)
-      setSteps(steps => steps.map((s: Step) => {
-        return {
-          ...s,
-          status: "completed"
-        }
-        
-      }))
+      setSteps(steps => steps.map((s: Step) => ({
+        ...s,
+        status: "completed"
+      })))
     }
-    console.log(files);
   }, [steps, files]);
 
+  // ----------------------------
+  // Mount WebContainer files
+  // ----------------------------
   useEffect(() => {
     const createMountStructure = (files: FileItem[]): Record<string, any> => {
       const mountStructure: Record<string, any> = {};
-  
       const processFile = (file: FileItem, isRootFolder: boolean) => {  
         if (file.type === 'folder') {
-          // For folders, create a directory entry
           mountStructure[file.name] = {
             directory: file.children ? 
               Object.fromEntries(
@@ -119,44 +112,32 @@ export function Builder() {
           };
         } else if (file.type === 'file') {
           if (isRootFolder) {
-            mountStructure[file.name] = {
-              file: {
-                contents: file.content || ''
-              }
-            };
+            mountStructure[file.name] = { file: { contents: file.content || '' } };
           } else {
-            // For files, create a file entry with contents
-            return {
-              file: {
-                contents: file.content || ''
-              }
-            };
+            return { file: { contents: file.content || '' } };
           }
         }
-  
         return mountStructure[file.name];
       };
-  
-      // Process each top-level file/folder
       files.forEach(file => processFile(file, true));
-  
       return mountStructure;
     };
   
     const mountStructure = createMountStructure(files);
-  
-    // Mount the structure if WebContainer is available
-    console.log(mountStructure);
     webcontainer?.mount(mountStructure);
   }, [files, webcontainer]);
 
+  // ----------------------------
+  // Initialize builder
+  // ----------------------------
   async function init() {
     const response = await axios.post(`${BACKEND_URL}/template`, {
       prompt: prompt.trim()
     });
     setTemplateSet(true);
     
-    const {prompts, uiPrompts} = response.data;
+    const {prompts, uiPrompts, projectId} = response.data; // projectId returned from backend
+    setProjectId(projectId); // store it for download
 
     setSteps(parseXml(uiPrompts[0]).map((x: Step) => ({
       ...x,
@@ -172,7 +153,6 @@ export function Builder() {
     })
 
     setLoading(false);
-
     setSteps(s => [...s, ...parseXml(stepsResponse.data.response).map(x => ({
       ...x,
       status: "pending" as "pending"
@@ -182,7 +162,6 @@ export function Builder() {
       role: "user",
       content
     })));
-
     setLlmMessages(x => [...x, {role: "assistant", content: stepsResponse.data.response}])
   }
 
@@ -190,11 +169,25 @@ export function Builder() {
     init();
   }, [])
 
+  // ----------------------------
+  // Render
+  // ----------------------------
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col">
-      <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
-        <h1 className="text-xl font-semibold text-gray-100">Website Builder</h1>
-        <p className="text-sm text-gray-400 mt-1">Prompt: {prompt}</p>
+      <header className="bg-gray-800 border-b border-gray-700 px-6 py-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-100">Website Builder</h1>
+          <p className="text-sm text-gray-400 mt-1">Prompt: {prompt}</p>
+        </div>
+        {/* Download Button */}
+        {projectId && (
+          <button
+            className="bg-green-500 px-4 py-2 ml-2 text-white rounded"
+            onClick={() => window.open(`${BACKEND_URL}/download/${projectId}`, "_blank")}
+          >
+            Download ZIP
+          </button>
+        )}
       </header>
       
       <div className="flex-1 overflow-hidden">
