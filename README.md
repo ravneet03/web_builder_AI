@@ -1,5 +1,5 @@
 # Web Builder AI  
-🌐 **Live Demo:** [Web Builder AI/](https://web-builder-ai-nu.vercel.app/)  
+🌐 **Live Demo:** <a href="https://web-builder-ai-nu.vercel.app/" target="_blank">Web Builder AI </a>  
 _Automate website building with AI-powered solutions._  
 
 ## 🚀 Project Overview  
