@@ -23,7 +23,7 @@ export function Home() {
             <Wand2 className="w-12 h-12 text-blue-400" />
           </div>
           <h1 className="text-4xl font-bold text-gray-100 mb-4">
-            Website Builder AI
+            Web-Builder AI
           </h1>
           <p className="text-lg text-gray-300">
             Describe your dream website, and we'll help you build it step by step
