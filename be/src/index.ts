@@ -112,7 +112,8 @@ app.get("/download/:projectId", async (req: Request, res: Response) => {
     const projectPath = path.join(PROJECTS_DIR, projectId);
 
     if (!fs.existsSync(projectPath)) {
-      return res.status(404).json({ message: "Project not found" });
+      res.status(404).json({ message: "Project not found" });
+      return;
     }
 
     const zipPath = path.join(PROJECTS_DIR, `${projectId}.zip`);
@@ -120,13 +121,13 @@ app.get("/download/:projectId", async (req: Request, res: Response) => {
     const archive = archiver("zip", { zlib: { level: 9 } });
 
     output.on("close", () => {
-      res.download(zipPath, `project-${projectId}.zip`, (err) => {
+      res.download(zipPath, `project-${projectId}.zip`, (err: Error | undefined) => {
         if (err) console.error("Error sending ZIP:", err);
         fs.unlinkSync(zipPath); // clean up
       });
     });
 
-    archive.on("error", (err) => {
+    archive.on("error", (err: Error) => {
       throw err;
     });
 
