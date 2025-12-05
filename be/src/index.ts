@@ -38,13 +38,16 @@ app.post("/template", async (req: Request, res: Response) => {
         "Return either node or react based on what do you think this project should be. Only return a single word either 'node' or 'react'. Do not return anything extra",
     });
 
-    const answer = (response.content[0] as TextBlock).text; // react or node
+    const answer = (response.content[0] as TextBlock).text; // "react" or "node"
     const projectId = uuidv4(); // generate unique project ID
     const projectPath = path.join(PROJECTS_DIR, projectId);
     fs.mkdirSync(projectPath);
 
     // Save base prompt file for demo (can save full project later)
-    fs.writeFileSync(path.join(projectPath, "README.txt"), `Project Type: ${answer}\n\nPrompt: ${prompt}`);
+    fs.writeFileSync(
+      path.join(projectPath, "README.txt"),
+      `Project Type: ${answer}\n\nPrompt: ${prompt}`
+    );
 
     // Respond including projectId
     if (answer === "react") {
@@ -91,7 +94,6 @@ app.post("/chat", async (req: Request, res: Response) => {
       system: getSystemPrompt(),
     });
 
-    console.log("response");
     res.json({
       response: (response.content[0] as TextBlock)?.text,
     });
