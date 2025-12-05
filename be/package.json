@@ -6,8 +6,8 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "typescript": "^5.8.2",
-    "archiver": "^7.0.0",   // 👈 add this
-    "uuid": "^9.0.1"        // 👈 and this
+    "archiver": "^7.0.0",
+    "uuid": "^9.0.1"  
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
