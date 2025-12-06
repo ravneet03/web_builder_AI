@@ -33,7 +33,7 @@ app.post("/template", async (req: Request, res: Response) => {
     const response = await anthropic.messages.create({
       messages: [{ role: "user", content: prompt }],
       // 👇 IMPORTANT: use a real Anthropic model id
-      model: "claude-3-5-sonnet-20240620",
+      model: "claude-3-5-haiku-20241022",
       max_tokens: 200,
       system:
         "Return either node or react based on what do you think this project should be. Only return a single word either 'node' or 'react'. Do not return anything extra",
@@ -91,7 +91,7 @@ app.post("/chat", async (req: Request, res: Response) => {
     const response = await anthropic.messages.create({
       messages,
       // 👇 same correct model id here too
-      model: "claude-3-5-sonnet-20240620",
+      model: "claude-3-5-haiku-20241022",
       max_tokens: 8000,
       system: getSystemPrompt(),
     });
