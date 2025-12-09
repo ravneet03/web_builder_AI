@@ -145,8 +145,10 @@ export function Builder() {
     })));
 
     setLoading(true);
-    const stepsResponse = await axios.post(`${BACKEND_URL}/chat`, {
+    const stepsResponse = await axios.post(`${165
+                                              `, {
       messages: [...prompts, prompt].map(content => ({
+                  projectId
         role: "user",
         content
       }))
