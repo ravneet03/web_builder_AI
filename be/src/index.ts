@@ -9,7 +9,7 @@ import cors from "cors";
 import fs from "fs";
 import path from "path";
 import archiver from "archiver";
-import { parseXml } from "./steps";105
+import { parseXml } from "./steps";
 
 import { v4 as uuidv4 } from "uuid";
 
@@ -86,7 +86,7 @@ app.post("/template", async (req: Request, res: Response) => {
 // =========================
 // /chat endpoint
 // =========================
-88, async (req: Request, res: Response) => {
+app.post("/chat", async (req: Request, res: Response) => {
   try {
     const messages = req.body.messages;
 
@@ -99,8 +99,7 @@ app.post("/template", async (req: Request, res: Response) => {
     });
 
 
-        // 110
-    to project if projectId is provided
+        ry to save generated files to project if projectId is provided
     const projectId = req.body.projectId;
     if (projectId) {
       try {
