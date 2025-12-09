@@ -106,6 +106,43 @@ app.post("/chat", async (req: Request, res: Response) => {
 });
 
 // =========================
+// /save-project endpoint
+// =========================
+app.post("/save-project", async (req: Request, res: Response) => {
+  try {
+    const { projectId, files } = req.body;
+    const projectPath = path.join(PROJECTS_DIR, projectId);
+    
+    // Recursive function to save files
+    const saveFiles = (filesList: any[], basePath: string): void => {
+      filesList.forEach(file => {
+        const filePath = path.join(basePath, file.name);
+        if (file.type === 'folder') {
+          if (!fs.existsSync(filePath)) {
+            fs.mkdirSync(filePath, { recursive: true });
+          }
+          if (file.children && file.children.length > 0) {
+            saveFiles(file.children, filePath);
+          }
+        } else if (file.type === 'file') {
+          fs.writeFileSync(filePath, file.content || '');
+        }
+      });
+    };
+    
+    // Save all files
+    if (files && Array.isArray(files)) {
+      saveFiles(files, projectPath);
+    }
+    
+    res.json({ message: "Project saved successfully", projectId });
+  } catch (error) {
+    console.error("Error saving project:", error);
+    res.status(500).json({ message: "Save error" });
+  }
+});
+
+// =========================
 // /download/:projectId endpoint
 // =========================
 app.get("/download/:projectId", async (req: Request, res: Response) => {
