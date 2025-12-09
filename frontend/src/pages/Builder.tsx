@@ -183,7 +183,7 @@ export function Builder() {
         {projectId && (
           <button
             className="bg-green-500 px-4 py-2 ml-2 text-white rounded"
-            onClick={() => window.open(`${BACKEND_URL}/download/${projectId}`, "_blank")}
+            onClick={async () => { await axios.post(`${BACKEND_URL}/save-project`, { projectId, files }); window.open(`${BACKEND_URL}/download/${projectId}`, "_blank")}
           >
             Download ZIP
           </button>
