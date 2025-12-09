@@ -9,6 +9,8 @@ import cors from "cors";
 import fs from "fs";
 import path from "path";
 import archiver from "archiver";
+import { parseXml } from "./steps";105
+
 import { v4 as uuidv4 } from "uuid";
 
 const anthropic = new Anthropic();
@@ -84,7 +86,7 @@ app.post("/template", async (req: Request, res: Response) => {
 // =========================
 // /chat endpoint
 // =========================
-app.post("/chat", async (req: Request, res: Response) => {
+88, async (req: Request, res: Response) => {
   try {
     const messages = req.body.messages;
 
@@ -95,6 +97,51 @@ app.post("/chat", async (req: Request, res: Response) => {
       max_tokens: 8000,
       system: getSystemPrompt(),
     });
+
+
+        // 110
+    to project if projectId is provided
+    const projectId = req.body.projectId;
+    if (projectId) {
+      try {
+        const responseText = (response.content[0] as TextBlock)?.text || '';
+        const parsedSteps = parseXml(responseText);
+        const projectPath = path.join(PROJECTS_DIR, projectId);
+        
+        // Save each file from the parsed steps
+        const saveFiles = (filesList: any[], basePath: string): void => {
+          filesList.forEach(file => {
+            const filePath = path.join(basePath, file.name);
+            if (file.type === 'folder') {
+              if (!fs.existsSync(filePath)) {
+                fs.mkdirSync(filePath, { recursive: true });
+              }
+              if (file.children && file.children.length > 0) {
+                saveFiles(file.children, filePath);
+              }
+            } else if (file.type === 'file') {
+              fs.writeFileSync(filePath, file.content || '');
+            }
+          });
+        };
+        
+        // Extract files from steps
+        const filesFromSteps = parsedSteps
+          .filter((step: any) => step.type === 'CreateFile')
+          .map((step: any) => ({
+            name: step.path?.split('/').pop() || 'file',
+            type: 'file',
+            content: step.code
+          }));
+        
+        if (filesFromSteps.length > 0) {
+          saveFiles(filesFromSteps, projectPath);
+        }
+      } catch (fileError) {
+        console.warn('Warning: Could not save generated files to disk:', fileError);
+        // Continue anyway - this is not critical for the response
+      }
+    }
 
     res.json({
       response: (response.content[0] as TextBlock)?.text,
