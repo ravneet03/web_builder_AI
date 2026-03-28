@@ -90,7 +90,7 @@ app.post("/chat", async (req: Request, res: Response) => {
     const response = await anthropic.messages.create({
       messages,
       model: process.env.AI_MODEL || "claude-3-haiku-20240307",
-      max_tokens: 8000,
+      max_tokens: 4000,
       system: getSystemPrompt(),
     });
 
