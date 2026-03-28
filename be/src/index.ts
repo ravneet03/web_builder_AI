@@ -125,7 +125,7 @@ app.post("/chat", async (req: Request, res: Response) => {
         };
 
         // Extract files from steps
-        const filesFromSteps = parsedSteps
+        /*const filesFromSteps = parsedSteps
           .filter((step: any) => step.type === "CreateFile")
           .map((step: any) => ({
             name: step.path?.split("/").pop() || "file",
@@ -135,7 +135,7 @@ app.post("/chat", async (req: Request, res: Response) => {
 
         if (filesFromSteps.length > 0) {
           saveFiles(filesFromSteps, projectPath);
-        }
+        }*/
       } catch (fileError) {
         console.warn(
           "Warning: Could not save generated files to disk:",
