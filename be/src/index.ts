@@ -34,7 +34,6 @@ app.post("/template", async (req: Request, res: Response) => {
 
     const response = await anthropic.messages.create({
       messages: [{ role: "user", content: prompt }],
-      // ✅ FIXED MODEL
       model: process.env.AI_MODEL || "claude-3-haiku-20240307",
       max_tokens: 200,
       system:
@@ -90,13 +89,11 @@ app.post("/chat", async (req: Request, res: Response) => {
 
     const response = await anthropic.messages.create({
       messages,
-      // ✅ FIXED MODEL
       model: process.env.AI_MODEL || "claude-3-haiku-20240307",
       max_tokens: 8000,
       system: getSystemPrompt(),
     });
 
-    // ✅ FIXED SYNTAX ERROR
     // Try to save generated files to project if projectId is provided
     const projectId = req.body.projectId;
 
@@ -104,10 +101,11 @@ app.post("/chat", async (req: Request, res: Response) => {
       try {
         const responseText =
           (response.content[0] as TextBlock)?.text || "";
-        const parsedSteps = parseXml(responseText);
+
+        // ❌ REMOVED: const parsedSteps = parseXml(responseText);
+
         const projectPath = path.join(PROJECTS_DIR, projectId);
 
-        // Save each file from the parsed steps
         const saveFiles = (filesList: any[], basePath: string): void => {
           filesList.forEach((file) => {
             const filePath = path.join(basePath, file.name);
@@ -124,8 +122,8 @@ app.post("/chat", async (req: Request, res: Response) => {
           });
         };
 
-        // Extract files from steps
-        /*const filesFromSteps = parsedSteps
+        /*
+        const filesFromSteps = parsedSteps
           .filter((step: any) => step.type === "CreateFile")
           .map((step: any) => ({
             name: step.path?.split("/").pop() || "file",
@@ -135,7 +133,8 @@ app.post("/chat", async (req: Request, res: Response) => {
 
         if (filesFromSteps.length > 0) {
           saveFiles(filesFromSteps, projectPath);
-        }*/
+        }
+        */
       } catch (fileError) {
         console.warn(
           "Warning: Could not save generated files to disk:",
