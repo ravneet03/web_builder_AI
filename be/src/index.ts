@@ -1,4 +1,4 @@
-require "dotenv".config();
+require("dotenv").config();
 import express, { Request, Response } from "express";
 import Anthropic from "@anthropic-ai/sdk";
 import { BASE_PROMPT, getSystemPrompt } from "./prompts";
@@ -34,25 +34,23 @@ app.post("/template", async (req: Request, res: Response) => {
 
     const response = await anthropic.messages.create({
       messages: [{ role: "user", content: prompt }],
-      // 👇 IMPORTANT: use a real Anthropic model id
-      model: process.env.AI_MODEL,
+      // ✅ FIXED MODEL
+      model: process.env.AI_MODEL || "claude-3-haiku-20240307",
       max_tokens: 200,
       system:
         "Return either node or react based on what do you think this project should be. Only return a single word either 'node' or 'react'. Do not return anything extra",
     });
 
-    const answer = (response.content[0] as TextBlock).text; // "react" or "node"
-    const projectId = uuidv4(); // generate unique project ID
+    const answer = (response.content[0] as TextBlock).text;
+    const projectId = uuidv4();
     const projectPath = path.join(PROJECTS_DIR, projectId);
     fs.mkdirSync(projectPath);
 
-    // Save base prompt file for demo (can save full project later)
     fs.writeFileSync(
       path.join(projectPath, "README.txt"),
       `Project Type: ${answer}\n\nPrompt: ${prompt}`
     );
 
-    // Respond including projectId
     if (answer === "react") {
       res.json({
         prompts: [
@@ -92,53 +90,57 @@ app.post("/chat", async (req: Request, res: Response) => {
 
     const response = await anthropic.messages.create({
       messages,
-      // 👇 same correct model id here too
-      model: process.env.AI_MODEL,
+      // ✅ FIXED MODEL
+      model: process.env.AI_MODEL || "claude-3-haiku-20240307",
       max_tokens: 8000,
       system: getSystemPrompt(),
     });
 
-
-        ry to save generated files to project if projectId is provided
+    // ✅ FIXED SYNTAX ERROR
+    // Try to save generated files to project if projectId is provided
     const projectId = req.body.projectId;
+
     if (projectId) {
       try {
-        const responseText = (response.content[0] as TextBlock)?.text || '';
+        const responseText =
+          (response.content[0] as TextBlock)?.text || "";
         const parsedSteps = parseXml(responseText);
         const projectPath = path.join(PROJECTS_DIR, projectId);
-        
+
         // Save each file from the parsed steps
         const saveFiles = (filesList: any[], basePath: string): void => {
-          filesList.forEach(file => {
+          filesList.forEach((file) => {
             const filePath = path.join(basePath, file.name);
-            if (file.type === 'folder') {
+            if (file.type === "folder") {
               if (!fs.existsSync(filePath)) {
                 fs.mkdirSync(filePath, { recursive: true });
               }
               if (file.children && file.children.length > 0) {
                 saveFiles(file.children, filePath);
               }
-            } else if (file.type === 'file') {
-              fs.writeFileSync(filePath, file.content || '');
+            } else if (file.type === "file") {
+              fs.writeFileSync(filePath, file.content || "");
             }
           });
         };
-        
+
         // Extract files from steps
         const filesFromSteps = parsedSteps
-          .filter((step: any) => step.type === 'CreateFile')
+          .filter((step: any) => step.type === "CreateFile")
           .map((step: any) => ({
-            name: step.path?.split('/').pop() || 'file',
-            type: 'file',
-            content: step.code
+            name: step.path?.split("/").pop() || "file",
+            type: "file",
+            content: step.code,
           }));
-        
+
         if (filesFromSteps.length > 0) {
           saveFiles(filesFromSteps, projectPath);
         }
       } catch (fileError) {
-        console.warn('Warning: Could not save generated files to disk:', fileError);
-        // Continue anyway - this is not critical for the response
+        console.warn(
+          "Warning: Could not save generated files to disk:",
+          fileError
+        );
       }
     }
 
@@ -158,29 +160,27 @@ app.post("/save-project", async (req: Request, res: Response) => {
   try {
     const { projectId, files } = req.body;
     const projectPath = path.join(PROJECTS_DIR, projectId);
-    
-    // Recursive function to save files
+
     const saveFiles = (filesList: any[], basePath: string): void => {
-      filesList.forEach(file => {
+      filesList.forEach((file) => {
         const filePath = path.join(basePath, file.name);
-        if (file.type === 'folder') {
+        if (file.type === "folder") {
           if (!fs.existsSync(filePath)) {
             fs.mkdirSync(filePath, { recursive: true });
           }
           if (file.children && file.children.length > 0) {
             saveFiles(file.children, filePath);
           }
-        } else if (file.type === 'file') {
-          fs.writeFileSync(filePath, file.content || '');
+        } else if (file.type === "file") {
+          fs.writeFileSync(filePath, file.content || "");
         }
       });
     };
-    
-    // Save all files
+
     if (files && Array.isArray(files)) {
       saveFiles(files, projectPath);
     }
-    
+
     res.json({ message: "Project saved successfully", projectId });
   } catch (error) {
     console.error("Error saving project:", error);
@@ -208,7 +208,7 @@ app.get("/download/:projectId", async (req: Request, res: Response) => {
     output.on("close", () => {
       res.download(zipPath, `project-${projectId}.zip`, (err: Error | undefined) => {
         if (err) console.error("Error sending ZIP:", err);
-        fs.unlinkSync(zipPath); // clean up
+        fs.unlinkSync(zipPath);
       });
     });
 
